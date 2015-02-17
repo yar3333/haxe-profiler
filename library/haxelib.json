@@ -1,0 +1,11 @@
+{
+  "name": "profiler",
+  "license": "LGPL",
+  "tags": ["profile"],
+  "description": "Profiler for all targets.",
+  "contributors": ["yar3333"],
+  "releasenote": "Extract this library from stdlib haxe library.",
+  "version": "1.0.0",
+  "url": "https://bitbucket.org/yar3333/haxe-profiler",
+  "dependencies": {}
+}
