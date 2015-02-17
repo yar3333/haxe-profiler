@@ -68,7 +68,7 @@ class Profiler
 	#if macro
 	
 	/**
-	 * Build macro to attach measureResult() to methods marked as @profile.
+	 * Build macro to attach measureResult() to all methods of the class.
 	 * You can exclude some methods by @:noprofile meta.
 	 */
 	public static macro function buildAll() : Array<haxe.macro.Expr.Field>
