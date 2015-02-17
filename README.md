@@ -2,56 +2,59 @@
 
 This library help you to profile the code.
 
-#### Manual collect data ####
+## Manual collect data ##
+
+Profiler has two alternative: direct call begin/end or measure with a callback function.
+
+### Direct call begin/end
 ```
 #!haxe
-var profiler = new Profiler(5); // 5 = collect data deep level
+Profiler.begin("myCodeA");
+// code to measure duration
+Profiler.end();
+```
 
-profiler.measure("myCodeA", function()
+### Measure with a callback function
+```
+#!haxe
+Profiler.measure("myCodeA", function()
 {
     // code to measure duration
 });
 
-var result = profiler.measureResult("myCodeB", function()
+var result = Profiler.measureResult("myCodeB", function()
 {
     // code to measure duration
     return "abc"; // result
 });
 ```
 
-#### Collect data by macro ####
-Use **@:build(Profiler.build(full_path_to_static_profiler_var))** to enable profiling for classes and **@ profile** (without space) before class/method to specify profiling all/specified class methods:
+
+## Collect data by macro ##
+
+Use `@:build(Profiler.buildAll())` to profile all methods of class. Use `@:noprofile` to exclude methods.
+
+Use `@:build(Profiler.buildMarked())` to profile only methods with a `@:profile` meta.
 ```
 #!haxe
-class Main
-{
-    public static var profiler = new stdlib.Profiler();
-    
-    static function main()
-    {
-        var obj = new MyClassToProfile();
-        obj.f();
-    }
-}
-
-@:build(Profiler.build(Main.profiler))
+@:build(Profiler.buildMarked())
 class MyClassToProfile
 {
-    @profile public function f() {  trace("f() called"); }
+    @:profile public function f() {  trace("f() called"); }
 }
 ```
 
-#### Getting collected data ####
+## Getting collected data ##
 ```
 #!haxe
 // trace summary
-profiler.traceResults();
+Profiler.traceResults();
 
 // get all calls as linear array
-var results = profiler.getCallStackResults();
+var results = Profiler.getCallStackResults();
 
 // get all calls as tree
-var callTree = profiler.getCallStack();
-//it is very useful to generate human-readable json from this
+var callTree = Profiler.getCallStack();
+// it is very useful to generate human-readable json from this
 trace(Json.stringify({ name:"myApp", stack:callTree }));
 ```
