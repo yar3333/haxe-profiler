@@ -2,6 +2,46 @@
 
 This library help you to profile the code.
 
+Using example:
+```
+@:build(Profiler.buildAll())
+class Test
+{
+	public function new() {}
+	
+	public function pubF()
+	{
+		Sys.sleep(1);
+		privF();
+		Sys.sleep(2);
+	}
+	
+	function privF() Sys.sleep(0.5);
+}
+
+class Main
+{
+	static function main()
+	{
+		var test = new Test();
+		
+		test.pubF();
+		test.pubF();
+		
+		Sys.println(Profiler.getCallStackResultsAsText());
+	}
+}
+```
+
+Result:
+```
+0000 | Test.new
+3503 | Test.pubF
+0500 |     Test.privF
+3501 | Test.pubF
+0500 |     Test.privF
+```
+
 ## Manual collect data ##
 
 Profiler has two alternative: direct call begin/end or measure with a callback function.
