@@ -4,8 +4,8 @@
   "tags": ["profile"],
   "description": "Profiler for all targets.",
   "contributors": ["yar3333"],
-  "releasenote": "Extract this library from stdlib haxe library.",
-  "version": "1.0.0",
+  "releasenote": "Exception bugfix.",
+  "version": "1.0.1",
   "url": "https://bitbucket.org/yar3333/haxe-profiler",
   "dependencies": {}
 }
