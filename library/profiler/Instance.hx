@@ -338,7 +338,7 @@ class Instance
 			stdlib.Exception.rethrow(e);
 		#else
 			#if neko
-			neko.Lib.rethrow(exception);
+			neko.Lib.rethrow(e);
 			#else
 			throw e;
 			#end
