@@ -21,7 +21,7 @@ private typedef Call =
 	var subname : String;
 	var stack : Array<Call>;
 	var parent : Call;
-	var dt : Float;
+	var dt : Null<Float>;
 }
 
 class Instance
