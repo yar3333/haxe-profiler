@@ -4,8 +4,8 @@
   "tags": ["profile"],
   "description": "Profiler for all targets.",
   "contributors": ["yar3333"],
-  "releasenote": "Exception bugfix.",
-  "version": "1.0.1",
+  "releasenote": "Fix for static platforms.",
+  "version": "1.0.2",
   "url": "https://bitbucket.org/yar3333/haxe-profiler",
   "dependencies": {}
 }
