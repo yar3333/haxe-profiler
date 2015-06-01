@@ -127,7 +127,11 @@ class Instance
 		return r;
 	}
 
-    public function traceResults(width=120) : Void
+    public function getSummaryGistogram(width=120) : String return getGistogram(getSummaryResults(), width);
+    public function getNestedGistogram(width=120) : String return getGistogram(getNestedResults(), width);
+    public function getcallsGistogram(width=120) : String return getGistogram(getCallStackResults(), width);
+	
+	public function traceResults(traceNested=false, traceCalls=false, width=120) : Void
     {
    		if (level > 0)
 		{
@@ -139,13 +143,16 @@ class Instance
 				}
 			}
 			
-	        trace("PROFILER Summary:\n" + getGistogram(getSummaryResults(), width));
+	        trace("PROFILER Summary:\n" + getSummaryGistogram(width));
 			
-			trace("PROFILER Nested:\n" + getGistogram(getNestedResults(), width));
-			
-			if (level > 1)
+			if (traceNested)
 			{
-				trace("PROFILER Calls:\n" + getGistogram(getCallStackResults(), width));
+				trace("PROFILER Nested:\n" + getNestedGistogram(width));
+			}
+			
+			if (traceCalls && level > 1)
+			{
+				trace("PROFILER Calls:\n" + getcallsGistogram(width));
 			}
         }
     }
@@ -178,7 +185,7 @@ class Instance
                 }
             }
             
-            return Std.int((b.dt - a.dt) * 1000);
+            return Math.round((b.dt - a.dt) * 1000);
         });
 		
 		return r;
@@ -204,10 +211,7 @@ class Instance
         }
         
         var values = Lambda.array(results);
-        values.sort(function(a, b)
-        {
-            return Std.int((b.dt - a.dt) * 1000);
-        });
+        values.sort(function(a, b) return Reflect.compare(b.dt, a.dt));
 		
 		return values;
     }
@@ -242,7 +246,7 @@ class Instance
 		return cloneCall(call, minDt).stack;
 	}
     
-    public function getGistogram(results:Iterable<Result>, width:Int) : String
+    function getGistogram(results:Iterable<Result>, width:Int) : String
     {
 		var maxLen = 0;
 		var maxDT = 0.0;
@@ -329,7 +333,7 @@ class Instance
 	
 	function dtAsStr(dt:Float) : String
 	{
-		return Std.string(Std.int(dt * 1000));
+		return Std.string(Math.round(dt * 1000));
 	}
 	
 	static inline function rethrowException(e:Dynamic) : Void

@@ -25,9 +25,13 @@ class Profiler
 		return instance.measureResult(name, subname, f);
 	}
 	
-	public static function traceResults(width=120) : Void
+	public static function getSummaryGistogram(?width:Int) : String return instance.getSummaryGistogram(width);
+	public static function getNestedGistogram(?width:Int) : String return instance.getNestedGistogram(width);
+	public static function getcallsGistogram(?width:Int) : String return instance.getcallsGistogram(width);
+	
+	public static function traceResults(?traceNested:Bool, ?traceCalls:Bool, ?width:Int) : Void
 	{
-		instance.traceResults(width);
+		instance.traceResults(traceNested, traceCalls, width);
 	}
 	
 	public static function getNestedResults() : Array<profiler.Result>
@@ -40,7 +44,7 @@ class Profiler
 		return instance.getSummaryResults();
 	}
 	
-	public static function getCallStackResults(minDT = 0.0, ?filter:String) : Array<profiler.Result>
+	public static function getCallStackResults(minDT=0.0, ?filter:String) : Array<profiler.Result>
 	{
 		return instance.getCallStackResults(minDT, filter);
 	}
@@ -53,11 +57,6 @@ class Profiler
 	public static function getCallStack(minDt=0.0) : Dynamic
 	{
 		return instance.getCallStack(minDt);
-	}
-	
-	public static function getGistogram(results:Iterable<profiler.Result>, width:Int) : String
-	{
-		return instance.getGistogram(results, width);
 	}
 	
 	public static function reset() : Void
