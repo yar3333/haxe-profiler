@@ -95,43 +95,7 @@ class Instance
         }
     }
 	
-	public function measure(name:String, ?subname:String, f:Void->Void) : Void
-	{
-		begin(name, subname);
-		try
-		{
-			f();
-		}
-		catch (e:Dynamic)
-		{
-			end();
-			rethrowException(e);
-		}
-		end();
-	}
-	
-	public function measureResult<T>(name:String, ?subname:String, f:Void->T) : T
-	{
-		begin(name, subname);
-		var r : T = null;
-		try
-		{
-			r = f();
-		}
-		catch (e:Dynamic)
-		{
-			end();
-			rethrowException(e);
-		}
-		end();
-		return r;
-	}
-
-    public function getSummaryGistogram(width=120) : String return getGistogram(getSummaryResults(), width);
-    public function getNestedGistogram(width=120) : String return getGistogram(getNestedResults(), width);
-    public function getCallsGistogram(width=120) : String return getGistogram(getCallStackResults(), width);
-	
-	public function traceResults(traceNested=false, traceCalls=false, width=120) : Void
+	public function traceResults(traceNested:Bool, traceCallStack:Bool, width:Int) : Void
     {
    		if (level > 0)
 		{
@@ -139,22 +103,47 @@ class Instance
 			{
 				for (b in opened)
 				{
-					trace("PROFILER WARNING: Block '" + b.name + "' not ended");
+					trace("PROFILER WARNING: Block '" + b.name + "' is not ended");
 				}
 			}
 			
-	        trace("PROFILER Summary:\n" + getSummaryGistogram(width));
+	        trace("PROFILER Summary:\n" + Gistogram.generate(getSummaryResults(), width));
 			
 			if (traceNested)
 			{
-				trace("PROFILER Nested:\n" + getNestedGistogram(width));
+				trace("PROFILER Nested:\n" + Gistogram.generate(getNestedResults(), width));
 			}
 			
-			if (traceCalls && level > 1)
+			if (traceCallStack && level > 1)
 			{
-				trace("PROFILER Calls:\n" + getcallsGistogram(width));
+				trace("PROFILER Calls:\n" + Gistogram.generate(getCallStackResults(0), width));
 			}
         }
+    }
+    
+    public function getSummaryResults() : Array<Result>
+    {
+        if (level < 1) return [];
+		
+		var results = new Map<String,Result>();
+		
+        for (name in blocks.keys()) 
+        {
+            var block = blocks.get(name);
+            var nameParts = name.split('-');
+            name = nameParts[nameParts.length - 1];
+            if (!results.exists(name))
+            {
+                results.set(name, { name:name, dt:0.0, count:0 });
+            }
+            results.get(name).dt += block.dt;
+            results.get(name).count += block.count;
+        }
+        
+        var values = Lambda.array(results);
+        values.sort(function(a, b) return Reflect.compare(b.dt, a.dt));
+		
+		return values;
     }
 	
 	public function getNestedResults() : Array<Result>
@@ -190,55 +179,10 @@ class Instance
 		
 		return r;
 	}
-    
-    public function getSummaryResults() : Array<Result>
-    {
-        if (level < 1) return [];
-		
-		var results = new Map<String,Result>();
-		
-        for (name in blocks.keys()) 
-        {
-            var block = blocks.get(name);
-            var nameParts = name.split('-');
-            name = nameParts[nameParts.length - 1];
-            if (!results.exists(name))
-            {
-                results.set(name, { name:name, dt:0.0, count:0 });
-            }
-            results.get(name).dt += block.dt;
-            results.get(name).count += block.count;
-        }
-        
-        var values = Lambda.array(results);
-        values.sort(function(a, b) return Reflect.compare(b.dt, a.dt));
-		
-		return values;
-    }
 	
-	public function getCallStackResults(minDT=0.0, ?filter:String) : Array<Result>
+	public function getCallStackResults(minDT:Float, ?filter:String) : Array<Result>
 	{
 		return level > 1 ? callStackToResults(minDT, call, 0, filter) : [];
-	}
-	
-	public function getCallStackResultsAsText(minDT=0.0, ?filter:String) : String
-	{
-		var results = getCallStackResults(minDT, filter);
-		
-		var maxNameLen = 0;
-		for (result in results)
-		{
-			if (result.name.length > maxNameLen)
-			{
-				maxNameLen = result.name.length;
-			}
-		}
-		
-		return results.map(function(e)
-		{
-			return dtAsStr(e.dt).lpad("0", 4) + " | " + e.name.rpad(" ", maxNameLen - e.name.length);
-		}
-		).join("\n");
 	}
 	
 	public function getCallStack(minDt=0.0) : Dynamic
@@ -246,39 +190,6 @@ class Instance
 		return cloneCall(call, minDt).stack;
 	}
     
-    function getGistogram(results:Iterable<Result>, width:Int) : String
-    {
-		var maxLen = 0;
-		var maxDT = 0.0;
-		var maxCount = 0;
-		for (result in results) 
-		{
-			maxLen = Std.int(Math.max(maxLen, result.name.length));
-			maxDT = Math.max(maxDT, result.dt);
-			maxCount = Std.int(Math.max(maxCount, result.count));
-		}
-		
-		var countLen = maxCount > 1 ? Std.string(maxCount).length : 0;
-		
-		var maxW = width - maxLen - countLen;
-		if (maxW < 1) maxW = 1;
-		
-		var r = "";
-		for (result in results)
-		{
-			
-			r += StringTools.lpad(dtAsStr(result.dt), "0", dtAsStr(maxDT).length) + " | ";
-			r += StringTools.rpad(StringTools.rpad('', '*', Math.round(result.dt / maxDT * maxW)), ' ', maxW) + " | ";
-			r += StringTools.rpad(result.name, " ", maxLen);
-			if (countLen > 0)
-			{
-				r += " [" + StringTools.rpad(Std.string(result.count), " ", countLen) + " time(s)]";
-			}
-			r += "\n";
-		}
-		return r;
-    }
-	
 	public function reset() : Void
 	{
 		if (level > 0)
@@ -294,7 +205,7 @@ class Instance
 	
 	function cloneCall(c:Call, minDt:Float) : Dynamic
 	{
-		var dt = c.dt != null ? dtAsStr(c.dt).lpad(" ", 4) : "";
+		var dt = c.dt != null ? TimeToString.run(c.dt).lpad(" ", 4) : "";
 		var name = dt + " " + c.name + (c.subname != null ? " / " + c.subname : "");
 		var stack = c.stack != null ? c.stack.filter(function(e) return Math.round(e.dt * 1000) >= minDt) : [];
 		if (stack.length > 0)
@@ -329,23 +240,5 @@ class Instance
 		if (call.name + (call.subname != null ? " / " + call.subname : "") == filter) return true;
 		for (c in call.stack) if (callStackHasName(c, filter)) return true;
 		return false;
-	}
-	
-	function dtAsStr(dt:Float) : String
-	{
-		return Std.string(Math.round(dt * 1000));
-	}
-	
-	static inline function rethrowException(e:Dynamic) : Void
-	{
-		#if stdlib
-			stdlib.Exception.rethrow(e);
-		#else
-			#if neko
-			neko.Lib.rethrow(e);
-			#else
-			throw e;
-			#end
-		#end
 	}
 }

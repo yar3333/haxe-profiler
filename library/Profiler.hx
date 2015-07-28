@@ -1,10 +1,14 @@
+import profiler.Gistogram;
+import profiler.Instance;
+import profiler.Result;
+import profiler.TimeToString;
 using Lambda;
 using StringTools;
 
 @:expose
 class Profiler
 {
-	public static var instance = new profiler.Instance(1000000);
+	public static var instance = new Instance(1000000);
 	
     public static function begin(name:String, ?subname:String) : Void
 	{
@@ -16,43 +20,73 @@ class Profiler
 		instance.end();
 	}
 	
+	
 	public static function measure(name:String, ?subname:String, f:Void->Void) : Void
 	{
-		instance.measure(name, subname, f);
+		instance.begin(name, subname);
+		try
+		{
+			f();
+		}
+		catch (e:Dynamic)
+		{
+			instance.end();
+			rethrowException(e);
+		}
+		instance.end();
 	}
 	
 	public static function measureResult<T>(name:String, ?subname:String, f:Void->T) : T
 	{
-		return instance.measureResult(name, subname, f);
+		instance.begin(name, subname);
+		var r : T = null;
+		try
+		{
+			r = f();
+		}
+		catch (e:Dynamic)
+		{
+			instance.end();
+			rethrowException(e);
+		}
+		instance.end();
+		return r;
 	}
 	
-	public static function getSummaryGistogram(?width:Int) : String return instance.getSummaryGistogram(width);
-	public static function getNestedGistogram(?width:Int) : String return instance.getNestedGistogram(width);
-	public static function getcallsGistogram(?width:Int) : String return instance.getcallsGistogram(width);
-	
-	public static function traceResults(?traceNested:Bool, ?traceCalls:Bool, ?width:Int) : Void
+	public static function traceResults(traceNested=false, traceCallStack=false, width=120) : Void
 	{
-		instance.traceResults(traceNested, traceCalls, width);
+		instance.traceResults(traceNested, traceCallStack, width);
 	}
 	
-	public static function getNestedResults() : Array<profiler.Result>
+	public static function getNestedResults() : Array<Result>
 	{
 		return instance.getNestedResults();
 	}
 	
-	public static function getSummaryResults() : Array<profiler.Result>
+	public static function getSummaryResults() : Array<Result>
 	{
 		return instance.getSummaryResults();
 	}
 	
-	public static function getCallStackResults(minDT=0.0, ?filter:String) : Array<profiler.Result>
+	public static function getCallStackResults(minDT=0.0, ?filter:String) : Array<Result>
 	{
 		return instance.getCallStackResults(minDT, filter);
 	}
 	
-	public static function getCallStackResultsAsText(minDT=0.0, ?filter:String) : String
+	public function getCallStackResultsAsText(minDT=0.0, ?filter:String) : String
 	{
-		return instance.getCallStackResultsAsText(minDT, filter);
+		var results = instance.getCallStackResults(minDT, filter);
+		
+		var maxNameLen = 0;
+		for (result in results)
+		{
+			if (result.name.length > maxNameLen)
+			{
+				maxNameLen = result.name.length;
+			}
+		}
+		
+		return results.map(function(e) return TimeToString.run(e.dt).lpad("0", 4) + " | " + e.name.rpad(" ", maxNameLen - e.name.length)).join("\n");
 	}
 	
 	public static function getCallStack(minDt=0.0) : Dynamic
@@ -60,14 +94,37 @@ class Profiler
 		return instance.getCallStack(minDt);
 	}
 	
-	public static function getGistogram(results:Iterable<profiler.Result>, width=120) : String
+	public static function getSummaryGistogram(width=120) : String
 	{
-		return instance.getGistogram(results, width);
+		return Gistogram.generate(getSummaryResults(), width);
+	}
+	
+	public static function getNestedGistogram(width=120) : String
+	{
+		return Gistogram.generate(getNestedResults(), width);
+	}
+	
+	public static function getCallStackGistogram(width=120) : String
+	{
+		return Gistogram.generate(getCallStackResults(), width);
 	}
 	
 	public static function reset() : Void
 	{
 		instance.reset();
+	}
+	
+	static inline function rethrowException(e:Dynamic) : Void
+	{
+		#if stdlib
+			stdlib.Exception.rethrow(e);
+		#else
+			#if neko
+			neko.Lib.rethrow(e);
+			#else
+			throw e;
+			#end
+		#end
 	}
 	
 	#if macro
