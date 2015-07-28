@@ -1,6 +1,7 @@
 using Lambda;
 using StringTools;
 
+@:expose
 class Profiler
 {
 	public static var instance = new profiler.Instance(1000000);
@@ -40,7 +41,7 @@ class Profiler
 		return instance.getSummaryResults();
 	}
 	
-	public static function getCallStackResults(minDT = 0.0, ?filter:String) : Array<profiler.Result>
+	public static function getCallStackResults(minDT=0.0, ?filter:String) : Array<profiler.Result>
 	{
 		return instance.getCallStackResults(minDT, filter);
 	}
@@ -55,7 +56,7 @@ class Profiler
 		return instance.getCallStack(minDt);
 	}
 	
-	public static function getGistogram(results:Iterable<profiler.Result>, width:Int) : String
+	public static function getGistogram(results:Iterable<profiler.Result>, width=120) : String
 	{
 		return instance.getGistogram(results, width);
 	}

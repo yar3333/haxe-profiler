@@ -127,7 +127,7 @@ class Instance
 		return r;
 	}
 
-    public function traceResults(width=120) : Void
+    public function traceResults(width:Int) : Void
     {
    		if (level > 0)
 		{
