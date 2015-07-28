@@ -3,7 +3,7 @@
 This library help you to profile the code.
 
 Using example:
-```
+```haxe
 @:build(Profiler.buildAll())
 class Test
 {
@@ -48,16 +48,14 @@ Numbers like `3501` means 3,501 seconds.
 Profiler has two alternative: direct call begin/end or measure with a callback function.
 
 ### Direct call begin/end
-```
-#!haxe
+```haxe
 Profiler.begin("myCodeA");
 // code to measure duration
 Profiler.end();
 ```
 
 ### Measure with a callback function
-```
-#!haxe
+```haxe
 Profiler.measure("myCodeA", function()
 {
     // code to measure duration
@@ -76,8 +74,7 @@ var result = Profiler.measureResult("myCodeB", function()
 Use `@:build(Profiler.buildAll())` to profile all methods of class. Use `@:noprofile` to exclude methods.
 
 Use `@:build(Profiler.buildMarked())` to profile only methods with a `@:profile` meta.
-```
-#!haxe
+```haxe
 @:build(Profiler.buildMarked())
 class MyClassToProfile
 {
@@ -86,8 +83,7 @@ class MyClassToProfile
 ```
 
 ## Getting collected data ##
-```
-#!haxe
+```haxe
 // trace summary
 Profiler.traceResults();
 
