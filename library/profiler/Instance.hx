@@ -129,7 +129,7 @@ class Instance
 
     public function getSummaryGistogram(width=120) : String return getGistogram(getSummaryResults(), width);
     public function getNestedGistogram(width=120) : String return getGistogram(getNestedResults(), width);
-    public function getcallsGistogram(width=120) : String return getGistogram(getCallStackResults(), width);
+    public function getCallsGistogram(width=120) : String return getGistogram(getCallStackResults(), width);
 	
 	public function traceResults(traceNested=false, traceCalls=false, width=120) : Void
     {

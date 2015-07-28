@@ -1,6 +1,7 @@
 using Lambda;
 using StringTools;
 
+@:expose
 class Profiler
 {
 	public static var instance = new profiler.Instance(1000000);
@@ -57,6 +58,11 @@ class Profiler
 	public static function getCallStack(minDt=0.0) : Dynamic
 	{
 		return instance.getCallStack(minDt);
+	}
+	
+	public static function getGistogram(results:Iterable<profiler.Result>, width=120) : String
+	{
+		return instance.getGistogram(results, width);
 	}
 	
 	public static function reset() : Void
