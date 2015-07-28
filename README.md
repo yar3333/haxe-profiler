@@ -41,6 +41,7 @@ Result:
 3501 | Test.pubF
 0500 |     Test.privF
 ```
+Numbers like `3501` means 3,501 seconds.
 
 ## Manual collect data ##
 
