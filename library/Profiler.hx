@@ -73,7 +73,7 @@ class Profiler
 		return instance.getCallStackResults(minDT, filter);
 	}
 	
-	public function getCallStackResultsAsText(minDT=0.0, ?filter:String) : String
+	public static function getCallStackResultsAsText(minDT=0.0, ?filter:String) : String
 	{
 		var results = instance.getCallStackResults(minDT, filter);
 		
