@@ -4,8 +4,8 @@
   "tags": ["profile"],
   "description": "Profiler for all targets.",
   "contributors": ["yar3333"],
-  "releasenote": "README fix.",
-  "version": "1.0.4",
+  "releasenote": "Profiler.getCallStackResultsAsText() fix.",
+  "version": "1.0.5",
   "url": "https://bitbucket.org/yar3333/haxe-profiler",
   "dependencies": {}
 }
