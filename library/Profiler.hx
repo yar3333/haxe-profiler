@@ -68,14 +68,14 @@ class Profiler
 		return instance.getSummaryResults();
 	}
 	
-	public static function getCallStackResults(minDT=0.0, ?filter:String) : Array<Result>
+	public static function getCallStackResults(minDT=0.0, ?filterTo:String, ?filterFrom:String) : Array<Result>
 	{
-		return instance.getCallStackResults(minDT, filter);
+		return instance.getCallStackResults(minDT, filterTo, filterFrom);
 	}
 	
-	public static function getCallStackResultsAsText(minDT=0.0, ?filter:String) : String
+	public static function getCallStackResultsAsText(minDT=0.0, ?filterTo:String, ?filterFrom:String) : String
 	{
-		var results = instance.getCallStackResults(minDT, filter);
+		var results = instance.getCallStackResults(minDT, filterTo, filterFrom);
 		
 		var maxNameLen = 0;
 		for (result in results)

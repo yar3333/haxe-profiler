@@ -95,7 +95,7 @@ class Instance
         }
     }
 	
-	public function traceResults(traceNested:Bool, traceCallStack:Bool, width:Int) : Void
+	public function traceResults(traceNested:Bool, traceCallStack:Bool, width:Int, minDT=0.0, ?filterTo:String, ?filterFrom:String, ?infos:haxe.PosInfos) : Void
     {
    		if (level > 0)
 		{
@@ -103,20 +103,20 @@ class Instance
 			{
 				for (b in opened)
 				{
-					trace("PROFILER WARNING: Block '" + b.name + "' is not ended");
+					trace("PROFILER WARNING: Block '" + b.name + "' is not ended", infos);
 				}
 			}
 			
-	        trace("PROFILER Summary:\n" + Gistogram.generate(getSummaryResults(), width));
+	        trace("PROFILER Summary:\n" + Gistogram.generate(getSummaryResults(), width), infos);
 			
 			if (traceNested)
 			{
-				trace("PROFILER Nested:\n" + Gistogram.generate(getNestedResults(), width));
+				trace("PROFILER Nested:\n" + Gistogram.generate(getNestedResults(), width), infos);
 			}
 			
 			if (traceCallStack && level > 1)
 			{
-				trace("PROFILER Calls:\n" + Gistogram.generate(getCallStackResults(0), width));
+				trace("PROFILER Calls:\n" + Gistogram.generate(getCallStackResults(minDT, filterTo, filterFrom), width), infos);
 			}
         }
     }
@@ -180,9 +180,9 @@ class Instance
 		return r;
 	}
 	
-	public function getCallStackResults(minDT:Float, ?filter:String) : Array<Result>
+	public function getCallStackResults(minDT:Float, filterTo:String, filterFrom:String) : Array<Result>
 	{
-		return level > 1 ? callStackToResults(minDT, call, 0, filter) : [];
+		return level > 1 ? callStackToResults(minDT, call, 0, filterTo, filterFrom) : [];
 	}
 	
 	public function getCallStack(minDt=0.0) : Dynamic
@@ -219,26 +219,36 @@ class Instance
 		return name;
 	}
 	
-	function callStackToResults(minDT:Float, call:Call, indent:Int, ?filter:String) : Array<Result>
+	function callStackToResults(minDT:Float, call:Call, indent:Int, filterTo:String, filterFrom:String) : Array<Result>
 	{
 		var r = [];
 		for (c in call.stack)
 		{
-			if ((c.dt == null || c.dt >= minDT) && callStackHasName(c, filter))
-			{
+			if ((c.dt == null || c.dt >= minDT) 
+			 && callStackThisOrChildrenHasName(c, filterTo)
+			 && (callStackThisOrParentsHasName(c, filterFrom) || callStackThisOrChildrenHasName(c, filterFrom))
+			) {
 				var prefix = ""; for (i in 0...indent) prefix += "  ";
 				r.push( { name:prefix + c.name + (c.subname != null ? " / " + c.subname : ""), dt:c.dt, count:1  } );
-				r = r.concat(callStackToResults(minDT, c, indent + 2, filter));
+				r = r.concat(callStackToResults(minDT, c, indent + 2, filterTo, filterFrom));
 			}
 		}
 		return r;
 	}
 	
-	function callStackHasName(call:Call, filter:String) : Bool
+	function callStackThisOrChildrenHasName(call:Call, filter:String) : Bool
 	{
 		if (filter == null || filter == "") return true;
 		if (call.name + (call.subname != null ? " / " + call.subname : "") == filter) return true;
-		for (c in call.stack) if (callStackHasName(c, filter)) return true;
+		for (c in call.stack) if (callStackThisOrChildrenHasName(c, filter)) return true;
 		return false;
+	}
+	
+	function callStackThisOrParentsHasName(call:Call, filter:String) : Bool
+	{
+		if (filter == null || filter == "") return true;
+		if (call == null || call.name == null) return false;
+		if (call.name + (call.subname != null ? " / " + call.subname : "") == filter) return true;
+		return callStackThisOrParentsHasName(call.parent, filter);
 	}
 }
